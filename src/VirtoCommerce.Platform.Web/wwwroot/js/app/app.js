@@ -198,10 +198,10 @@ angular.module('platformWebApp', AppDependencies).controller('platformWebApp.app
                 var authData = authDataStorage.getStoredData();
                 var authHeaders = authData ? { Authorization: 'Bearer ' + authData.token } : {};
                 item.headers = angular.extend({}, item.headers, authHeaders);
-                FileUploader.prototype.onAfterAddingFile(item);
-            }
+                this.onAfterAddingFile(item);
+            };
             return FileUploader;
-        }])
+        }]);
     }])
     .config(['$stateProvider', '$httpProvider', 'uiSelectConfig', 'datepickerConfig', 'datepickerPopupConfig', 'tagsInputConfigProvider', '$compileProvider',
         function ($stateProvider, $httpProvider, uiSelectConfig, datepickerConfig, datepickerPopupConfig, tagsInputConfigProvider, $compileProvider) {
@@ -237,8 +237,8 @@ angular.module('platformWebApp', AppDependencies).controller('platformWebApp.app
             // Comment the following line while debugging or execute this in browser console: angular.reloadWithDebugInfo();
             $compileProvider.debugInfoEnabled(false);
         }])
-    .run(['$rootScope', '$state', '$stateParams', 'platformWebApp.authService', 'platformWebApp.mainMenuService', 'platformWebApp.pushNotificationService', '$animate', '$templateCache', 'gridsterConfig', 'taOptions', '$timeout', '$templateRequest', '$compile',
-        function ($rootScope, $state, $stateParams, authService, mainMenuService, pushNotificationService, $animate, $templateCache, gridsterConfig, taOptions, $timeout, $templateRequest, $compile) {
+    .run(['$location', '$rootScope', '$state', '$stateParams', 'platformWebApp.authService', 'platformWebApp.mainMenuService', 'platformWebApp.pushNotificationService', '$animate', '$templateCache', 'gridsterConfig', 'taOptions', '$timeout', '$templateRequest', '$compile',
+        function ($location, $rootScope, $state, $stateParams, authService, mainMenuService, pushNotificationService, $animate, $templateCache, gridsterConfig, taOptions, $timeout, $templateRequest, $compile) {
 
             //Disable animation
             $animate.enabled(false);
@@ -293,7 +293,10 @@ angular.module('platformWebApp', AppDependencies).controller('platformWebApp.app
             mainMenuService.addMenuItem(moreMenuItem);
 
             $rootScope.$on('unauthorized', function (event, rejection) {
-                if (!authService.isAuthenticated) {
+                var url = $location.url();
+                if (url.indexOf("resetpassword") !== -1) {
+                    $state.go('resetPasswordDialog');
+                } else if (!authService.isAuthenticated) {
                     $state.go('loginDialog');
                 }
             });
@@ -327,7 +330,6 @@ angular.module('platformWebApp', AppDependencies).controller('platformWebApp.app
                         $state.go('workspace');
                     }
                 }, 500);
-
             });
 
             authService.fillAuthData();
